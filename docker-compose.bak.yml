@@ -1,0 +1,83 @@
+version: "1"
+services:
+  jupyter:
+    container_name: bdv_notebook
+    image: jupyter/pyspark-notebook
+    ports:
+      - 8888:8888
+    volumes:
+      - ./app/notebooks:/home/jovyan/work
+      - ./app/data:/home/jovyan/data
+      - ./app/.models:/home/jovyan/.models
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - backend
+
+  spark:
+    image: bitnami/spark
+    container_name: spark
+#    build: ./spark
+    ports:
+      - 4040:4040
+      - 7077:7077
+      - 6066:6066
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ./app/spark:/app/scripts
+      - ./app/data:/app/data
+      - ./app/.models:/app/.models
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - backend
+  spark-worker-1:
+    container_name: spark_worker-1
+    image: bitnami/spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ./app/spark:/app/spark
+      - ./app/data:/app/data
+      - ./app/.models:/app/.models
+    depends_on:
+      - spark
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - backend
+  mongodb:
+    container_name: dis_mongodb
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27018:27017
+    expose:
+      - 27017
+    volumes:
+      - ./app/.mongodb:/data/db
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
