@@ -10,3 +10,6 @@ __pycache__
 !/data-out/README.md
 /.data-processing
 /app/.*
+/app/data/income-predictor/adult.data.full
+/.~*
+**/.DS_Store

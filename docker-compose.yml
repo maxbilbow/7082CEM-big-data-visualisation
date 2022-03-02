@@ -2,10 +2,17 @@ version: "1"
 services:
   jupyter:
     container_name: bdv_notebook
-    image: jupyter/pyspark-notebook
+    image: jupyter/pyspark-notebook # Docker image to download and run
     ports:
       - 8888:8888
-    volumes:
-      - ./app/notebooks:/home/jovyan/work
-      - ./app/data:/home/jovyan/data
-      - ./app/.models:/home/jovyan/.models
+    volumes: # Map local app folder to notebook container
+      - ./app:/home/jovyan/work
+  spark:
+    container_name: bdv_spark
+    build: ./spark # Location of custom docker image to build and run
+    ports:
+      - 4040:4040
+      - 7077:7077
+      - 6066:6066
+    volumes: # Map local app folder to spark container
+      - ./app:/workspace

@@ -1,1 +1,0 @@
-* Full stop removed from each line in data.test
